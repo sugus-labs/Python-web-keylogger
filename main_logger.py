@@ -10,9 +10,13 @@ IT IS NECESSARY TO PLAY THIS SCRIPT WITH ROOT PRIVILEGES (SUDO)
 
 # To install evdev library: sudo pip install evdev
 # evdev library webpage: http://pythonhosted.org/evdev/
-from evdev import InputDevice, list_devices, categorize, ecodes
+from evdev import InputDevice, list_devices, categorize, ecodes, resolve_ecodes
 # Necessary to read well multiple devices
 from select import select
+# Regular expressions library to catch the keys inside the events
+#import re
+
+evfmt = 'time {:<16} type {} ({}), code {:<4} ({}), value {}'
 
 # This list is to enter the strings in uppercase that we want to search
 wanted_devices_string_list = ["USB", "KEYBOARD"]
@@ -46,6 +50,21 @@ for dev in devices:
 devices = map(InputDevice, wanted_devices_list)
 devices = {dev.fd : dev for dev in devices}
 
+# This method is from evdev examples. It is very useful!
+def print_event(e):
+    if e.type == ecodes.EV_SYN:
+        if e.code == ecodes.SYN_MT_REPORT:
+            print('time {:<16} +++++++++ {} ++++++++'.format(e.timestamp(), ecodes.SYN[e.code]))
+        else:
+            print('time {:<16} --------- {} --------'.format(e.timestamp(), ecodes.SYN[e.code]))
+    else:
+        if e.type in ecodes.bytype:
+            codename = ecodes.bytype[e.type][e.code]
+        else:
+            codename = '?'
+
+        print(evfmt.format(e.timestamp(), e.type, ecodes.EV[e.type], e.code, codename, e.value))
+
 # Iterating infinitely over events from our interesting devices
 while True:
 	# Interface to Unix select() system call
@@ -54,4 +73,8 @@ while True:
 	for fd in r:
 		for event in devices[fd].read():
 			# Displaying the events categorized
-			print(categorize(event))
+			#m = outer.search(str(categorize(event)))
+			#print m
+			#print(repr(event))
+			#print(event)
+			print_event(event)
