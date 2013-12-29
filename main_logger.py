@@ -42,11 +42,16 @@ for dev in devices:
 	# Mapping all the capabilities of the device
 	#print "%s\n%s" % (key, device.capabilities(verbose=True))
 
+# Mapping only our interesting devices
 devices = map(InputDevice, wanted_devices_list)
 devices = {dev.fd : dev for dev in devices}
 
+# Iterating infinitely over events from our interesting devices
 while True:
+	# Interface to Unix select() system call
 	r,w,x = select(devices, [], [])
+	# searching only the interesting devices events 
 	for fd in r:
 		for event in devices[fd].read():
-			print(event)
+			# Displaying the events categorized
+			print(categorize(event))
