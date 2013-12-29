@@ -23,7 +23,7 @@ from select import select
 minimal_evfmt = '{},{},{}'
 
 # This list is to enter the strings in uppercase that we want to search
-wanted_devices_string_list = ["USB", "KEYBOARD"]
+wanted_devices_string_list = ["MOUSE", "KEYBOARD"]
 # This dictionnary is to save the devices that maps with our strings
 interesting_devices_dict = {}
 # This mapping maps each device to /dev/input/eventX
@@ -43,7 +43,7 @@ for dev in devices:
 			interesting_devices_dict[wanted_string] = dev
 			# Put all the wanted devives in the new tuple
 			wanted_devices_list.append(dev.fn)
-	print( '%-20s %-32s %s' % (dev.fn, dev.name, dev.phys) )
+	print( '%-20s %-38s %s' % (dev.fn, dev.name, dev.phys) )
 
 # Searching in all the interesting devices
 #for key, device in interesting_devices_dict.iteritems():
@@ -55,23 +55,28 @@ devices = map(InputDevice, wanted_devices_list)
 devices = {dev.fd : dev for dev in devices}
 
 # This method is derived from evdev examples. It is very useful!
+# This method only print from console the events.
 def print_event(e):
+	# If the type of the event is a marker to separate events
     if e.type == ecodes.EV_SYN:
         print('{}'.format(ecodes.SYN[e.code]))
         # SYN_MT_REPORT is to Multitouch Devices. In this case it is not necessary for the moment!
         # All these events are well described in https://www.kernel.org/doc/Documentation/input/event-codes.txt
+    # If the type of the event is not a marker to separate events
     else:
+    	# If the type of the event is known in evdev code, print the string associated
         if e.type in ecodes.bytype:
             codename = ecodes.bytype[e.type][e.code]
+        # If not, print unknown
         else:
             codename = 'UNKNOWN'
+        # Print a message like "EV_MSC,MSC_SCAN,157" or "EV_KEY,KEY_RIGHTCTRL,1"
         print(minimal_evfmt.format(ecodes.EV[e.type], codename, e.value))
         #print(evfmt.format(e.timestamp(), e.type, ecodes.EV[e.type], e.code, codename, e.value))
 
-
-# Iterating infinitely over events from our interesting devices
+# Reporting infinitelly over events from our interesting devices
 while True:
-	# Interface to Unix select() system call
+	# Interface to Unix select() system call. http://docs.python.org/2/library/select.html
 	r,w,x = select(devices, [], [])
 	# searching only the interesting devices events 
 	for fd in r:
