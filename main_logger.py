@@ -82,30 +82,30 @@ def print_event_to_console(e):
 # This method only print from console the events.
 #event_ended = False
 def print_event_to_txt(e):
-	# If the type of the event is a marker to separate events
-    if e.type == ecodes.EV_SYN:
-        data = '{}\n'.format(ecodes.SYN[e.code])
-        #event_ended = True
-    # If the type of the event is not a marker to separate events
-    else:
-    	#event_ended = False
-    	# If the type of the event is known in evdev code, print the string associated
-        if e.type in ecodes.bytype:
-            codename = ecodes.bytype[e.type][e.code]
-            #print codename
-       	    # if ecodes.EV[e.type] == 'EV_KEY':
-           	#     if codename.startswith('KEY_'):
-           	#     	print codename[4:]
-        # If not, print unknown
-        else:
-            codename = 'UNKNOWN'
-        # Print a message like "EV_MSC,MSC_SCAN,157" or "EV_KEY,KEY_RIGHTCTRL,1"
-        #print(minimal_evfmt.format(ecodes.EV[e.type], codename, e.value))
-        data = "%s - %s" % (codename, e.value)
-        #print(evfmt.format(e.timestamp(), e.type, ecodes.EV[e.type], e.code, codename, e.value))
-	return data
+	with open(textfile_name + ".txt", "ab") as text_file:
+		# If the type of the event is a marker to separate events
+	    if e.type == ecodes.EV_SYN:
+	        data = '\n'
+	        #event_ended = True
+	    # If the type of the event is not a marker to separate events
+	    else:
+	    	#event_ended = False
+	    	# If the type of the event is known in evdev code, print the string associated
+	        if e.type in ecodes.bytype:
+	            codename = ecodes.bytype[e.type][e.code]
+	            #print codename
+	       	    # if ecodes.EV[e.type] == 'EV_KEY':
+	           	#     if codename.startswith('KEY_'):
+	           	#     	print codename[4:]
+	        # If not, print unknown
+	        else:
+	            codename = 'UNKNOWN'
+	        # Print a message like "EV_MSC,MSC_SCAN,157" or "EV_KEY,KEY_RIGHTCTRL,1"
+	        #print(minimal_evfmt.format(ecodes.EV[e.type], codename, e.value))
+	        data = "%s - %s\n" % (codename, e.value)
+	        #print(evfmt.format(e.timestamp(), e.type, ecodes.EV[e.type], e.code, codename, e.value))
+	    text_file.write(str(data))
 
-#with open(textfile_name + ".txt", "ab") as text_file:
 # Reporting infinitelly over events from our interesting devices
 while True:
 	# Interface to Unix select() system call. http://docs.python.org/2/library/select.html
@@ -113,12 +113,6 @@ while True:
 	# searching only the interesting devices events 
 	for fd in r:
 		for event in devices[fd].read():
-			# Displaying the events categorized
-			#m = outer.search(str(categorize(event)))
-			#print m
+			# Displaying the events
 			#print(repr(event))
-			#print(event)
-			#data = print_event_to_txt(event)
-			#print str(data)
-			#text_file.write(str(data))
-			print_event_to_console(event)	
+			print_event_to_txt(event)	
