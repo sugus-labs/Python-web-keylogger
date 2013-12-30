@@ -101,8 +101,11 @@ def print_event_to_txt(e):
 	        else:
 	            codename = 'UNKNOWN'
 	        # Print a message like "EV_MSC,MSC_SCAN,157" or "EV_KEY,KEY_RIGHTCTRL,1"
+	        if codename[0] == 'M':
+	        	data = "%s " % (e.value)
+	        else:	
 	        #print(minimal_evfmt.format(ecodes.EV[e.type], codename, e.value))
-	        data = "%s - %s\n" % (codename, e.value)
+	        	data = "%s - %s\n" % (codename, e.value)
 	        #print(evfmt.format(e.timestamp(), e.type, ecodes.EV[e.type], e.code, codename, e.value))
 	    text_file.write(str(data))
 
